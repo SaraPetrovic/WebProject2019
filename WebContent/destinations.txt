@@ -1,0 +1,3 @@
+0; Beograd; Srbija; Nikola Tesla aerodrom; NTA-BG; ; true
+1; Nis; Srbija; Konstantin; KA-NI; ; false
+2; Amsterdam; Netherlands; Ams-airport-1; AMS1; ; true

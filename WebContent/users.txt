@@ -1,0 +1,2 @@
+0; sara; 123; Sara; Petrovic; 0655214922; sara@gmail.com; ; false; true
+1; mika; 123; Mika; Mikic; 0655214855; mika@gmail.com; ; false; false

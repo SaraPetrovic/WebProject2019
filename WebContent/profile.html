@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="ISO-8859-1">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="js/jquery.min.js"></script>
+  <script src="js/sweetAlert.js"></script>
+  <link href="css/sweetAlert.css" rel="stylesheet">
+  <script src="js/signup.js"></script>
+  <script src="js/profile.js"></script>
+  <script src="js/reservations.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	
+	<style>
+	h1, input, button, a, h2, p, h4, legend, label, span, div, h3 {
+		font-family: "Comic Sans MS", cursive, sans-serif;
+	}
+	.info{
+		color:red;
+	}
+	.big{
+			width: 1.5em; height: 1.5em;
+		}
+	textarea {
+		max-width: 350px;
+		max-height:90px;
+		min-width: 350px;
+		min-height:50px;
+		overflow-y: scroll;
+	}
+	.topnav {
+		overflow: hidden;
+		background-color: #FFFFFF;
+	}
+	
+	.topnav a {
+		float: left;
+		color: #000000;
+		text-align: center;
+		padding: 14px 16px;
+		text-decoration: none;
+		font-size: 17px;
+	}
+	
+	.topnav a:hover {
+		background-color: #F5F5F5;
+		color: black;
+	}
+	
+	.topnav a.active {
+		background-color: #F0F8FF;
+		color: black;
+	}
+	#panelBody {
+	  min-height: 200px;
+	  max-height: 290px;
+	  overflow-y: scroll;
+	}
+	#commentBody {
+	  min-height: 40px;
+	  max-height: 60px;
+	  overflow-y: scroll;
+	}
+	</style>
+
+</head>
+<body>
+<div class="container">
+	<div class="row">
+		<div class="col-md-6">
+			<h3 style="margin-left:20px;"><span id="loggeduser"></span></h3>
+		</div>
+		<div class="topnav">
+		  <a class="active" href="profile.html">Home</a>
+		  <a id="viewDestinations" href="destinations.html">Destinations</a>
+		  <a id="viewReservations" href="reservations.html">Reservations</a>
+		  <a id="viewUsers" href="users.html">Users</a>
+		  <a id="changeProfile" href="changeProfile.html">Change profile</a>
+		  <a id="logout" href="index.html" onclick="logout();">Log Out</a>
+		</div>
+	</div>
+	<div style="background-color:#F0F8FF; margin-top:10px;margin-bottom:20px;">
+	  <div class="container">
+	   <div class="row">
+	    <label>Filter</label><br>
+	    <div class="col-md-3  inputGroupContainer">
+		    <select class="form-control" id="filterOption" onchange="fillFilterOption();">
+		    	<option value="date">Date</option>
+		    	<option value="flightClass">Flight Class</option>
+		    	<option value="flightCode">Flight Number</option>
+		    </select>
+		</div>
+		<div class="col-md-3  inputGroupContainer">
+		    <span id="chooseCriteria">
+		    	<select class="form-control" id="criteriaSelect">
+		    		<option value="date">The latest</option>
+		    	</select>
+		    </span>
+	    </div>
+	    <button onclick="filter();" id="filter" class="btn btn-light">Filter</button>
+	   </div>
+	   <div class="row">
+	    <label>Search</label><br>
+	    <div class="col-md-3  inputGroupContainer">
+	    	<input id="searchInput" name="searchInput" class="form-control" type="text" placeholder="Search"/>
+	    </div>
+	    <div class="col-md-3  inputGroupContainer">
+	    	<input id="searchDate" name="searchDate" placeholder="Date" class="form-control"  type="date">
+	    </div>
+	    <button onclick="search()" id="search" class="btn btn-light">Search</button>
+	    <span id="filterAndSearchDiv"> </span>
+	   </div>
+	  
+	   
+		<div id="buttonArea">
+		
+		</div>
+
+		<div id="userPanel">
+		
+		</div>
+		
+		<h2 style="margin-left:60px;">Flights</h2>
+		<div id="flights" class="panel-group" style="margin-top:5px;">
+		 
+		</div>
+	  </div>
+	</div>
+</div>
+	
+	<script>
+
+		$.ajax({
+			type: "GET",
+			url: '../WebProjekat/rest/user/loggedUser',
+			success: function(user){
+				if(user.admin == false){
+					document.getElementById("viewDestinations").style.display = 'none';
+					document.getElementById("viewUsers").style.display = 'none';
+				}else{
+					document.getElementById("viewReservations").style.display = 'none';
+				}
+				document.getElementById("loggeduser").innerHTML = user.firstName + ' ' + user.lastName;
+
+				$.ajax({
+					type: "GET",
+					dataType : "json",
+					url: "../WebProjekat/rest/flight/getAll",
+					success: function(flights){
+						if(user.admin == false){
+							userPanel = "";
+							userPanel += '<label>Search your flight</label><br><div class="form-group" style="background-color:lightblue;">';
+							userPanel += '<div class="col-md-3  inputGroupContainer"><select id="start" required="required" class="form-control"></select></div>';
+							userPanel += '<div class="col-md-3  inputGroupContainer"><select id="end" required="required" class="form-control"></select></div>';
+							userPanel += '<div class="col-md-3  inputGroupContainer"><input id="datum" name="datum" placeholder="Date" class="form-control"  type="date" required></div>';
+							userPanel += '<button onclick="searchFlights()" id="searchFlight" class="btn btn-light">Search flights</button></div>';
+							$("#userPanel").append(userPanel);
+							
+							$.each(flights, function(i, flight){
+								var date = new Date(flight.date)
+								var panel = "";
+								panel += '<div class="panel panel-info col-md-6" style="width:90%;margin-left:60px;">';
+								panel += '<div class="panel-heading">Flight number: ' + flight.flightNumber + '</div>';
+								panel += '<div class="panel-body"><div class="row"><div class="col-md-6"><label>Start destination: ' + flight.startDestination.name.toUpperCase() + '<br>End destination: ' + flight.endDestination.name.toUpperCase() + '<br>First class price: ' + flight.priceFirst + 'e' + '<br>Business class price: ' + flight.priceBusiness + 'e' + '<br>Economic class price: ' + flight.priceEconomic + 'e' + '<br>Date: ' + date.toLocaleString() + '<br>Flight type: ' + flight.flightType + '</label></div></div><br>';
+								panel += '<div class="col-md-6"><button onclick="fillFlightNumberLabel(\'' + flight.flightNumber + '\')" data-toggle="modal" data-target="#bookingTicketModal" class="btn btn-success green"><i class="fa fa-share"></i>Booking ticket for this flight</button></div></div><br>';
+								panel += '<div id="body' + flight.id + '"></div></div>';
+								$("#flights").append(panel);
+							});
+
+
+							$("#start").empty();
+							$("#end").empty();
+							$.ajax({
+								type: "GET",
+								url: "../WebProjekat/rest/destination/getAllActive",
+								success: function(destinations){
+									var startSelect = document.getElementById("start");
+									var endSelect = document.getElementById("end");
+									var opt1 = document.createElement("OPTION");
+									var opt2 = document.createElement("OPTION");
+									startSelect.add(opt1);
+									endSelect.add(opt2);
+									opt1.text = "Choose start destination";
+									opt1.selected = true;
+									opt1.value = 0;
+									opt1.disabled = true;
+									opt2.text = "Choose end destination";
+									opt2.selected = true;
+									opt2.value = 0;
+									opt2.disabled = true;
+									$.each(destinations, function(i, destination){
+										var option1 = document.createElement("OPTION");
+										var option2 = document.createElement("OPTION");
+										startSelect.add(option1);
+										option1.value = destination.name;
+										option1.text = destination.name;
+										endSelect.add(option2);
+										option2.value = destination.name;
+										option2.text = destination.name;
+									});
+								}
+							});
+							
+						}else{
+							var button = '<h3><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addFlightModal" onclick="fillDestinationSelects()" style="margin-left:790px;margin-top:10px;">New flight</button></h3>';
+							var filterAndSearchButton = '<button style="margin-left:70px;" onclick="filterAndSearch();" class="btn btn-light">Filter + Search</button>';
+							$("#filterAndSearchDiv").append(filterAndSearchButton);
+							$("#buttonArea").append(button);
+							$.each(flights, function(i, flight){
+								var date = new Date(flight.date)
+								var panel = "";
+								panel += '<div class="panel panel-info col-md-6" style="width:90%;margin-left:60px;">';
+								panel += '<div class="panel-heading">Flight number: ' + flight.flightNumber + '&nbsp;&nbsp;<button onclick="fillChangeForm(\'' + flight.id + '\')" class="btn btn-warning" data-toggle="modal" data-target="#changeFlightModal"><i class="fa fa-share"></i>Change</button>&nbsp;&nbsp;<button onclick="deleteFlight(' + flight.id + ');" class="btn btn-danger">Delete</button></div>';
+								panel += '<div class="panel-body"><div class="row"><div class="col-md-6"><label>Start destination: ' + flight.startDestination.name.toUpperCase() + '<br>End destionation: ' + flight.endDestination.name.toUpperCase() + '<br>First class price: ' + flight.priceFirst + 'e' + '<br>Business class price: ' + flight.priceBusiness + 'e' + '<br>Economic class price: ' + flight.priceEconomic + 'e' + '<br>Date: ' + date.toLocaleString() + '<br>Flight type: ' + flight.flightType + '</label></div></div></div>';
+								panel += '<div id="bodya' + flight.id + '"></div></div>';
+								$("#flights").append(panel);
+							});
+						}
+					}
+			 	});
+			}
+		});
+
+
+	
+		
+		
+	</script>
+	
+	<div class="container">
+	  <!-- The Modal -->
+	  <div class="modal fade" id="addFlightModal" role="dialog">
+	    <div class="modal-dialog">
+	      <div class="modal-content">
+	      
+	        <!-- Modal Header -->
+	        <div class="modal-header">
+	        	<button type="button" class="close" data-dismiss="modal">&times;</button>
+	          	<div id="flightHeader"><h2 class="modal-title">Create a new flight</h2></div>
+	        </div>
+	        
+			<!-- Modal body -->
+			  <div class="modal-body">
+	          <form method="post" class="flightForm" id="flight_form" style="align:center" autocomplete="off" >
+			  	<fieldset>
+			  		 <div class="form-group">
+				        <div class="col-md-12  inputGroupContainer">
+				            <input id="flightNumber" name="flightNumber" placeholder="Flight Number" class="form-control"  type="text" required><br>
+				        </div>
+				     </div>
+          			 <div class="form-group">
+				        <div class="col-md-12  inputGroupContainer">
+				            <select id="startSelect" required="required" class="form-control">
+				            
+				            </select>
+				        </div>
+				      </div>
+				      <div class="form-group">
+				        <div class="col-md-12  inputGroupContainer">
+				          <select id="endSelect" required="required" class="form-control">
+				            
+				            </select>
+				        </div>
+				      </div>
+				      <div class="form-group">
+				        <div class="col-md-6  inputGroupContainer">
+				            <input id="firstClass" name="firstClass" placeholder="Seats number of first class" class="form-control"  type="number" required><br>
+				        </div>
+				        <div class="col-md-6  inputGroupContainer">
+				            <input id="priceFirst" name="priceFirst" placeholder="Price of first class ticket" class="form-control"  type="number" required><br>
+				        </div>
+				      </div>
+				      <div class="form-group">
+				        <div class="col-md-6  inputGroupContainer">
+				            <input id="businessClass" name="businessClass" placeholder="Seats number of business class" class="form-control"  type="number" required><br>
+				        </div>
+				        <div class="col-md-6  inputGroupContainer">
+				            <input id="priceBusiness" name="priceBusiness" placeholder="Price of business class ticket" class="form-control"  type="number" required><br>
+				        </div>
+				      </div>
+				      <div class="form-group">
+				        <div class="col-md-6  inputGroupContainer">
+				            <input id="economicClass" name="economicClass" placeholder="Seats number of economic class" class="form-control"  type="number" required><br>
+				        </div>
+				        <div class="col-md-6  inputGroupContainer">
+				            <input id="priceEconomic" name="priceEconomic" placeholder="Price of economic class ticket" class="form-control"  type="number" required><br>
+				        </div>
+				      </div>
+				      <div class="form-group">
+				        <div class="col-md-12  inputGroupContainer">
+				            <input id="date" name="date" placeholder="Date" class="form-control"  type="datetime-local" required><br>
+				        </div>
+				      </div>
+				      <div class="form-group">
+				        <div class="col-md-12  inputGroupContainer">
+							<select id="flightType" class="form-control" required="required">
+								<option selected="selected" disabled="disabled">Choose flight type</option>
+								<option>CHARTER</option>
+								<option>REGIONAL</option>
+								<option>OVERSEAS</option>
+							</select>
+				        </div>
+				      </div>
+				    <button type="submit" id="addFlightButton" class="btn btn-success" style="margin-left:500px">Add</button>
+			  	</fieldset>
+			 </form>
+			</div>
+	      </div>
+	   	</div>
+	  </div>
+	</div>
+	
+	<div class="container">
+	  <!-- The Modal -->
+	  <div class="modal fade" id="changeFlightModal" role="dialog">
+	    <div class="modal-dialog">
+	      <div class="modal-content">
+	      
+	        <!-- Modal Header -->
+	        <div class="modal-header">
+	        	<button type="button" class="close" data-dismiss="modal">&times;</button>
+	          	<div id="flightHeader"><h2 class="modal-title">Change informations</h2></div>
+	        </div>
+	        
+			<!-- Modal body -->
+			  <div class="modal-body">
+	          <form method="post" class="changeFlightForm" id="changeFlightForm" style="align:center" autocomplete="off" >
+			  	<fieldset>
+					 <input type="hidden" id="idFlight">   
+          			 <div class="form-group">
+				        <div class="col-md-12  inputGroupContainer">
+				            <input id="number" name="number" placeholder="Flight number" class="form-control"  type="text" disabled="disabled"><br>
+				        </div>
+				      </div>
+				      <div class="form-group">
+				        <div class="col-md-6  inputGroupContainer">
+				        	<label>Seats number of first class</label>
+				            <input id="changeFirstClass" name="changeFirstClass" placeholder="Seats number of first class" class="form-control"  type="number" required><br>
+				        </div>
+				        <div class="col-md-6  inputGroupContainer">
+				        	<label>Price of first class ticket</label>
+				          	<input id="changePriceFirst" name="changePriceFirst" placeholder="Price of first class ticket" class="form-control"  type="number"><br>
+				        </div>
+				      </div>
+				      <div class="form-group">
+				        <div class="col-md-6  inputGroupContainer">
+				        	<label>Seats number of business class</label>
+				            <input id="changeBusinessClass" name="changeBusinessClass" placeholder="Seats number of business class" class="form-control"  type="number" required><br>
+				        </div>
+				        <div class="col-md-6  inputGroupContainer">
+				        	<label>Price of business class ticket</label>
+				          	<input id="changePriceBusiness" name="changePriceBusiness" placeholder="Price of business class ticket" class="form-control"  type="number"><br>
+				        </div>
+				      </div>
+				      <div class="form-group">
+				        <div class="col-md-6  inputGroupContainer">
+				        	<label>Seats number of economic class</label>
+				            <input id="changeEconomicClass" name="changeEconomicClass" placeholder="Seats number of economic class" class="form-control"  type="number" required><br>
+				        </div>
+				        <div class="col-md-6  inputGroupContainer">
+				        	<label>Price of economic class ticket</label>
+				          	<input id="changePriceEconomic" name="changePriceEconomic" placeholder="Price of economic class ticket" class="form-control"  type="number"><br>
+				        </div>
+				      </div>
+				    <button type="submit" id="changeFlightButton" class="btn btn-success" style="margin-left:500px">Apply</button>
+			  	</fieldset>
+			  </form>
+	       	 </div>
+	        </div>
+	      </div>
+	    </div>
+	  </div>
+	
+	
+	<div class="container">
+	  <!-- The Modal -->
+	  <div class="modal fade" id="bookingTicketModal" role="dialog">
+	    <div class="modal-dialog">
+	      <div class="modal-content">
+	      
+	        <!-- Modal Header -->
+	        <div class="modal-header">
+	        	<button type="button" class="close" data-dismiss="modal">&times;</button>
+	          	<div id="flightHeader"><h2 class="modal-title">Fill in the fields for booking ticket</h2></div>
+	        </div>
+	        
+			<!-- Modal body -->
+			  <div class="modal-body">
+	          <form method="post" class="bookingTicketForm" id="bookingTicketForm" style="align:center" autocomplete="off" >
+			  	<fieldset>
+			  		<input type="hidden" id="flightNum">
+          			<div class="form-group">
+				        <div class="col-md-12  inputGroupContainer">
+							<select id="ticketType" class="form-control" required="required">
+								<option selected="selected" disabled="disabled">Choose ticket type</option>
+								<option>BUSINESS</option>
+								<option>FIRST</option>
+								<option>ECONOMIC</option>
+							</select>
+				        </div>
+				      </div><br>
+				      <div class="form-group">
+				        <div class="col-md-12  inputGroupContainer">
+				          <input id="numOfPassengers" name="numOfPassengers" placeholder="Number of passengers" class="form-control"  type="number" required="required"><br>
+				        </div>
+				      </div>
+				    <button type="submit" id="bookingTicket" class="btn btn-success" style="margin-left:500px">Book</button>
+			  	</fieldset>
+			  </form>
+	       	 </div>
+	        </div>
+	      </div>
+	    </div>
+	  </div>
+	
+	
+</body>
+</html>
+	

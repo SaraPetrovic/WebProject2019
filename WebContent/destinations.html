@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="ISO-8859-1">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script src="js/sweetAlert.js"></script>
+	<link href="css/sweetAlert.css" rel="stylesheet">
+	
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="js/destinations.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    
+	<style>
+		label, input, h1, h2, div {
+			font-family: "Comic Sans MS", cursive, sans-serif;
+		}
+		textarea {
+			max-width: 350px;
+			max-height:170px;
+			min-width: 350px;
+			min-height:50px;
+		}
+		.topnav {
+			overflow: hidden;
+			background-color: #FFFFFF;
+		}
+		
+		.topnav a {
+			float: left;
+			color: #000000;
+			text-align: center;
+			padding: 14px 16px;
+			text-decoration: none;
+			font-size: 17px;
+		}
+		
+		.topnav a:hover {
+			background-color: #F5F5F5;
+			color: black;
+		}
+		
+		.topnav a.active {
+			background-color: #F0F8FF;
+			color: black;
+		}
+	</style>
+	
+</head>
+<body>
+
+	<div class="row">
+		<div class="col-md-6">
+			<h3 style="margin-left:20px;"><span id="loggeduser"></span></h3>
+		</div>
+		<div class="topnav">
+		  <a href="profile.html">Home</a>
+		  <a class="active" id="viewDestinations" href="destinations.html">Destinations</a>
+		  <a id="viewReservations" href="reservations.html">Reservations</a>
+		  <a id="viewUsers" href="users.html">Users</a>
+		  <a id="changeProfile" href="changeProfile.html">Change profile</a>
+		  <a id="logout" href="index.html" onclick="logout();">Log Out</a>
+		</div>
+	</div>
+	
+	<div style="background-color:#F0F8FF; margin-top:10px;margin-bottom:20px;">
+		<div class="container">
+			<br><h3><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addDestinationModal" style="margin-left:1150px;">Add destination</button></h3>
+		    <h2 style="margin-left:60px;">Destinations</h2>
+		  	<div id="group" class="panel-group">
+      			
+			</div>
+		</div>
+	</div>
+	
+	<div class="container">
+	  <!-- The Modal -->
+	  <div class="modal fade" id="addDestinationModal" role="dialog">
+	    <div class="modal-dialog">
+	      <div class="modal-content">
+	      
+	        <!-- Modal Header -->
+	        <div class="modal-header">
+	        	<button type="button" class="close" data-dismiss="modal">&times;</button>
+	          	<div id="destinationHeader"><h2 class="modal-title">Create a new destination</h2></div>
+	        </div>
+	        
+			<!-- Modal body -->
+			  <div class="modal-body">
+	          <form method="post" class="destinationForm" id="destination_form" style="align:center" autocomplete="off" >
+			  	<fieldset>
+          			 <div class="form-group">
+				        <div class="col-md-12  inputGroupContainer">
+				            <input id="destinationName" name="destinationName" placeholder="Destination name" class="form-control"  type="text" required><br>
+				        </div>
+				      </div>
+				      <div class="form-group">
+				        <div class="col-md-12  inputGroupContainer">
+				          <input id="country" name="country" placeholder="Country" class="form-control"  type="text" required><br>
+				        </div>
+				      </div>
+				      <div class="form-group">
+				        <div class="col-md-12  inputGroupContainer">
+				            <input id="airportName" name="airportName" placeholder="Airport name" class="form-control"  type="text" required><br>
+				        </div>
+				      </div>
+				      <div class="form-group">
+				        <div class="col-md-12  inputGroupContainer">
+				            <input id="airportCode" name="airportCode" placeholder="Airport code" class="form-control"  type="text" required><br>
+				        </div>
+				      </div>
+				    <button type="submit" id="addDestinationButton" class="btn btn-success" style="margin-left:500px">Add</button>
+			  	</fieldset>
+			 </form>
+			</div>
+	      </div>
+	   	</div>
+	  </div>
+	</div>
+	
+	<div class="container">
+	  <!-- The Modal -->
+	  <div class="modal fade" id="changeDestinationModal" role="dialog">
+	    <div class="modal-dialog">
+	      <div class="modal-content">
+	      
+	        <!-- Modal Header -->
+	        <div class="modal-header">
+	        	<button type="button" class="close" data-dismiss="modal">&times;</button>
+	          	<div id="destinationHeader"><h2 class="modal-title">Change destination's informations</h2></div>
+	        </div>
+	        
+			<!-- Modal body -->
+			  <div class="modal-body">
+	          <form method="post" class="changeDestinationForm" id="changeDestinationForm" style="align:center" autocomplete="off" >
+			  	<fieldset>
+					 <input type="hidden" id="idDestination">   
+          			 <div class="form-group">
+				        <div class="col-md-12  inputGroupContainer">
+				            <input id="changeDestinationName" name="changeDestinationName" placeholder="Destination name" class="form-control"  type="text" disabled="disabled"><br>
+				        </div>
+				      </div>
+				      <div class="form-group">
+				        <div class="col-md-12  inputGroupContainer">
+				          <input id="changeCountry" name="changeCountry" placeholder="Country" class="form-control"  type="text" disabled="disabled"><br>
+				        </div>
+				      </div>
+				      <div class="form-group">
+				        <div class="col-md-12  inputGroupContainer">
+				            <input id="changeAirportName" name="changeAirportName" placeholder="Airport name" class="form-control"  type="text" required><br>
+				        </div>
+				      </div>
+				      <div class="form-group">
+				        <div class="col-md-12  inputGroupContainer">
+				            <input id="changeAirportCode" name="changeAirportCode" placeholder="Airport code" class="form-control"  type="text" required><br>
+				        </div>
+				      </div>
+				    <button type="submit" id="changeDestinationButton" class="btn btn-success" style="margin-left:500px">Apply</button>
+			  	</fieldset>
+			  </form>
+	       	 </div>
+	        </div>
+	      </div>
+	    </div>
+	  </div>
+
+	<script>
+		$.ajax({
+			type : 'GET',
+			url : "../WebProjekat/rest/user/loggedUser",
+			dataType : "json",
+			success : function(user) {
+				document.getElementById("loggeduser").innerHTML = user.firstName + ' ' + user.lastName;
+				if(user.admin == false){
+					document.getElementById("viewDestinations").style.display = 'none';
+					document.getElementById("viewUsers").style.display = 'none';
+				}else{
+					document.getElementById("viewReservations").style.display = 'none';
+				}
+			}
+		});
+	</script>
+	
+</body>
+</html>
